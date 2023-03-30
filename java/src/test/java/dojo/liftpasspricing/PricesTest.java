@@ -18,12 +18,18 @@ public class PricesTest {
     @BeforeAll
     public static void createPrices() throws SQLException {
         connection = Prices.createApp();
+        connection.setAutoCommit(false);
     }
 
     @AfterAll
     public static void stopApplication() throws SQLException {
         Spark.stop();
         connection.close();
+    }
+
+    @AfterEach
+    public void rollBackChanges() throws SQLException {
+        connection.rollback();
     }
 
     @Test
@@ -81,7 +87,28 @@ public class PricesTest {
         assertPriceEquals(8, "type=night&age=72");
     }
 
-    private void assertPriceEquals(int cost, String queryParams) {
+    @Test
+    void set_base_price_day() {
+        assertPriceEquals(35, "type=1jour");
+        setPrice("1jour", 55);
+        assertPriceEquals(55, "type=1jour");
+    }
+
+    private void setPrice(String type, int price) {
+        RestAssured
+            .given()
+            .port(4567)
+            .when()
+            .put("/prices?type={type}&cost={price}", type, price)
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .assertThat()
+            .contentType("application/json")
+            .extract().jsonPath();
+    }
+
+    private void assertPriceEquals(int price, String queryParams) {
         JsonPath response = RestAssured
                 .given()
                 .port(4567)
@@ -94,7 +121,7 @@ public class PricesTest {
                 .contentType("application/json")
                 .extract().jsonPath();
 
-        assertEquals(cost, response.getInt("cost"));
+        assertEquals(price, response.getInt("cost"));
     }
 
 }
