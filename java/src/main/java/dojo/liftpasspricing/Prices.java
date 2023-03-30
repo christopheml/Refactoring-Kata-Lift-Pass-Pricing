@@ -52,7 +52,7 @@ public class Prices {
                 costStmt.setString(1, type);
                 try (ResultSet result = costStmt.executeQuery()) {
                     result.next();
-
+                    int baseCost = result.getInt("cost");
                     int reduction;
                     boolean isHoliday = false;
 
@@ -62,8 +62,6 @@ public class Prices {
                         reduction = 0;
 
                         if (!type.equals("night")) {
-
-
                             try (PreparedStatement holidayStmt = connection.prepareStatement( //
                                     "SELECT * FROM holidays")) {
                                 try (ResultSet holidays = holidayStmt.executeQuery()) {
@@ -78,7 +76,6 @@ public class Prices {
                                             }
                                         }
                                     }
-
                                 }
                             }
 
@@ -92,17 +89,17 @@ public class Prices {
 
                             // TODO apply reduction for others
                             if (age != null && age < 15) {
-                                return "{ \"cost\": " + (int) Math.ceil(result.getInt("cost") * .7) + "}";
+                                return "{ \"cost\": " + (int) Math.ceil(baseCost * .7) + "}";
                             } else {
                                 if (age == null) {
-                                    double cost = result.getInt("cost") * (1 - reduction / 100.0);
+                                    double cost = baseCost * (1 - reduction / 100.0);
                                     return "{ \"cost\": " + (int) Math.ceil(cost) + "}";
                                 } else {
                                     if (age > 64) {
-                                        double cost = result.getInt("cost") * .75 * (1 - reduction / 100.0);
+                                        double cost = baseCost * .75 * (1 - reduction / 100.0);
                                         return "{ \"cost\": " + (int) Math.ceil(cost) + "}";
                                     } else {
-                                        double cost = result.getInt("cost") * (1 - reduction / 100.0);
+                                        double cost = baseCost * (1 - reduction / 100.0);
                                         return "{ \"cost\": " + (int) Math.ceil(cost) + "}";
                                     }
                                 }
@@ -110,9 +107,9 @@ public class Prices {
                         } else {
                             if (age != null && age >= 6) {
                                 if (age > 64) {
-                                    return "{ \"cost\": " + (int) Math.ceil(result.getInt("cost") * .4) + "}";
+                                    return "{ \"cost\": " + (int) Math.ceil(baseCost * .4) + "}";
                                 } else {
-                                    return "{ \"cost\": " + result.getInt("cost") + "}";
+                                    return "{ \"cost\": " + baseCost + "}";
                                 }
                             } else {
                                 return "{ \"cost\": 0}";
