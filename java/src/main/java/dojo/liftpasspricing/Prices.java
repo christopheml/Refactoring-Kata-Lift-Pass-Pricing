@@ -40,12 +40,16 @@ public class Prices {
         });
 
         get("/prices", (req, res) -> {
+            DateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd");
+
             final Integer age = req.queryParams("age") != null ? Integer.valueOf(req.queryParams("age")) : null;
+            final String type = req.queryParams("type");
+            final Date date = req.queryParams("date") != null ? isoFormat.parse(req.queryParams("date")) : null;
 
             try (PreparedStatement costStmt = connection.prepareStatement( //
                     "SELECT cost FROM base_price " + //
                     "WHERE type = ?")) {
-                costStmt.setString(1, req.queryParams("type"));
+                costStmt.setString(1, type);
                 try (ResultSet result = costStmt.executeQuery()) {
                     result.next();
 
@@ -57,8 +61,8 @@ public class Prices {
                     } else {
                         reduction = 0;
 
-                        if (!req.queryParams("type").equals("night")) {
-                            DateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        if (!type.equals("night")) {
+
 
                             try (PreparedStatement holidayStmt = connection.prepareStatement( //
                                     "SELECT * FROM holidays")) {
@@ -66,11 +70,10 @@ public class Prices {
 
                                     while (holidays.next()) {
                                         Date holiday = holidays.getDate("holiday");
-                                        if (req.queryParams("date") != null) {
-                                            Date d = isoFormat.parse(req.queryParams("date"));
-                                            if (d.getYear() == holiday.getYear() && //
-                                                d.getMonth() == holiday.getMonth() && //
-                                                d.getDate() == holiday.getDate()) {
+                                        if (date != null) {
+                                            if (date.getYear() == holiday.getYear() && //
+                                                date.getMonth() == holiday.getMonth() && //
+                                                date.getDate() == holiday.getDate()) {
                                                 isHoliday = true;
                                             }
                                         }
@@ -79,9 +82,9 @@ public class Prices {
                                 }
                             }
 
-                            if (req.queryParams("date") != null) {
+                            if (date != null) {
                                 Calendar calendar = Calendar.getInstance();
-                                calendar.setTime(isoFormat.parse(req.queryParams("date")));
+                                calendar.setTime(date);
                                 if (!isHoliday && calendar.get(Calendar.DAY_OF_WEEK) == 2) {
                                     reduction = 35;
                                 }
