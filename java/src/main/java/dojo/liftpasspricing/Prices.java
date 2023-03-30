@@ -61,23 +61,7 @@ public class Prices {
                         reduction = 0;
 
                         if (!type.equals("night")) {
-                            boolean isHoliday = false;
-                            try (PreparedStatement holidayStmt = connection.prepareStatement( //
-                                    "SELECT * FROM holidays")) {
-                                try (ResultSet holidays = holidayStmt.executeQuery()) {
-
-                                    while (holidays.next()) {
-                                        Date holiday = holidays.getDate("holiday");
-                                        if (date != null) {
-                                            if (date.getYear() == holiday.getYear() && //
-                                                date.getMonth() == holiday.getMonth() && //
-                                                date.getDate() == holiday.getDate()) {
-                                                isHoliday = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            boolean isHoliday = isHoliday(connection, date);
 
                             if (date != null) {
                                 Calendar calendar = Calendar.getInstance();
@@ -125,6 +109,26 @@ public class Prices {
         });
 
         return connection;
+    }
+
+    private static boolean isHoliday(Connection connection, Date date) throws SQLException {
+        try (PreparedStatement holidayStmt = connection.prepareStatement( //
+                "SELECT * FROM holidays")) {
+            try (ResultSet holidays = holidayStmt.executeQuery()) {
+
+                while (holidays.next()) {
+                    Date holiday = holidays.getDate("holiday");
+                    if (date != null) {
+                        if (date.getYear() == holiday.getYear() && //
+                            date.getMonth() == holiday.getMonth() && //
+                            date.getDate() == holiday.getDate()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }
