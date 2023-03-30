@@ -54,7 +54,6 @@ public class Prices {
                     result.next();
                     int baseCost = result.getInt("cost");
                     int reduction;
-                    boolean isHoliday = false;
 
                     if (age != null && age < 6) {
                         return "{ \"cost\": 0}";
@@ -62,6 +61,7 @@ public class Prices {
                         reduction = 0;
 
                         if (!type.equals("night")) {
+                            boolean isHoliday = false;
                             try (PreparedStatement holidayStmt = connection.prepareStatement( //
                                     "SELECT * FROM holidays")) {
                                 try (ResultSet holidays = holidayStmt.executeQuery()) {
