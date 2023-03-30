@@ -60,7 +60,17 @@ public class Prices {
                     } else {
                         reduction = 0;
 
-                        if (!type.equals("night")) {
+                        if (type.equals("night")) {
+                            if (age != null && age >= 6) {
+                                if (age > 64) {
+                                    return "{ \"cost\": " + (int) Math.ceil(baseCost * .4) + "}";
+                                } else {
+                                    return "{ \"cost\": " + baseCost + "}";
+                                }
+                            } else {
+                                return "{ \"cost\": 0}";
+                            }
+                        } else {
                             boolean isHoliday = isHoliday(connection, date);
 
                             if (date != null) {
@@ -87,16 +97,6 @@ public class Prices {
                                         return "{ \"cost\": " + (int) Math.ceil(cost) + "}";
                                     }
                                 }
-                            }
-                        } else {
-                            if (age != null && age >= 6) {
-                                if (age > 64) {
-                                    return "{ \"cost\": " + (int) Math.ceil(baseCost * .4) + "}";
-                                } else {
-                                    return "{ \"cost\": " + baseCost + "}";
-                                }
-                            } else {
-                                return "{ \"cost\": 0}";
                             }
                         }
                     }
