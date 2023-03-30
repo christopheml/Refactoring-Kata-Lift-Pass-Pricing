@@ -61,7 +61,7 @@ public class Prices {
                         reduction = 0;
 
                         if (type.equals("night")) {
-                            if (age != null && age >= 6) {
+                            if (age != null) {
                                 if (age > 64) {
                                     return "{ \"cost\": " + (int) Math.ceil(baseCost * .4) + "}";
                                 } else {
